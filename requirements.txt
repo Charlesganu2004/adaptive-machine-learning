@@ -1,0 +1,10 @@
+jupyter
+ipykernel
+qiskit
+qiskit-aer
+numpy
+pandas
+matplotlib
+scikit-learn
+joblib
+pylatexenc

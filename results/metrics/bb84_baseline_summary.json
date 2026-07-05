@@ -1,0 +1,9 @@
+{
+  "total_qubits": 5000,
+  "eve_present": true,
+  "matching_bases": 2463,
+  "final_key_length": 2463,
+  "key_accuracy": 0.7474624441737718,
+  "qber": 0.25253755582622817,
+  "simulation_seconds": 189.1290675140001
+}

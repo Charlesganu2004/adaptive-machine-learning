@@ -1,8 +1,5 @@
 {
-    "python.defaultInterpreterPath": "${workspaceFolder}\\.venv-win\\Scripts\\python.exe",
-    "python-envs.workspaceSearchPaths": [
-        ".venv-win"
-    ],
-    "python-envs.defaultEnvManager": "ms-python.python:venv",
-    "python-envs.defaultPackageManager": "ms-python.python:pip"
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv",
+    "python.terminal.activateEnvironment": true,
+    "jupyter.notebookFileRoot": "${workspaceFolder}"
 }
