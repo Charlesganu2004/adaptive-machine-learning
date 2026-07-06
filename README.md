@@ -1,178 +1,102 @@
 # Adaptive Machine Learning for BB84 Quantum Key Distribution
 
-Machine Learning-Assisted Noise Analysis for BB84 Quantum Key Distribution in Noisy Quantum Channels
+Adaptive Machine Learning-Assisted Noise Mitigation for BB84 Quantum Key Distribution in Noisy Quantum Channels
 
 ## Abstract
 
-Quantum Key Distribution (QKD) offers a fundamentally secure method for cryptographic key exchange by using the principles of quantum mechanics. Among existing QKD protocols, BB84 remains one of the most widely studied and implemented approaches. However, the performance and reliability of BB84 can be degraded by quantum-channel and measurement noise, resulting in increased Quantum Bit Error Rates (QBER) and reduced key-generation reliability.
+Quantum Key Distribution (QKD) offers a fundamentally secure method for cryptographic key exchange using the principles of quantum mechanics. Among existing protocols, BB84 remains one of the most widely studied. However, its performance is degraded by quantum-channel and measurement noise, which raises the Quantum Bit Error Rate (QBER) and reduces key-generation reliability.
 
-This project develops a Qiskit-based BB84 simulation framework that models communication under multiple channel conditions, including ideal transmission, depolarizing noise, readout noise, amplitude-damping noise, and a combined-noise configuration. The simulation can also include an intercept-resend eavesdropper, Eve, so that the effects of both channel noise and eavesdropping can be compared.
-
-Hundreds of complete BB84 sessions are run across different noise strengths and channel conditions to generate a structured CSV dataset. Session-level measurements include QBER, key accuracy, sifted-key length, basis-specific QBER, directional error rates, and related channel statistics.
-
-A Random Forest classifier is trained to classify the observed channel condition as ideal, low noise, medium noise, or high noise. The model is evaluated using accuracy, balanced accuracy, macro F1-score, per-class precision and recall, a classification report, a confusion matrix, and feature-importance analysis.
-
-The current implementation focuses on BB84 simulation, noise characterization, dataset generation, and noise-severity prediction. Adaptive mitigation selection is a planned extension and is not yet implemented in the current codebase.
+This project builds a Qiskit-based BB84 simulation framework, models four canonical noise types (**bit-flip, phase-flip, depolarizing, and amplitude-damping**), generates a structured dataset relating channel behavior to QBER and key-generation performance, and trains a machine-learning classifier to identify the noise condition from observable session statistics. Crucially, the framework then **closes the loop**: based on the predicted channel state it dynamically selects a mitigation action and measures the resulting improvement. Separate studies quantify how much the protocol can be hardened against noise and search for unusual circuit structures that resist every noise type while staying fast.
 
 ## Research Problem
 
-Quantum Key Distribution provides theoretically secure key exchange, but physical noise and measurement errors can significantly degrade communication performance.
+QKD is theoretically secure, but physical noise degrades performance, and traditional BB84 only detects errors *after* transmission by comparing part of the sifted key. This project investigates whether machine learning can identify noisy channel conditions from BB84 session statistics and **select an appropriate mitigation strategy** to improve performance.
 
-Traditional BB84 systems identify errors after transmission by comparing part of the sifted key and calculating QBER. This project investigates whether machine learning can learn from BB84 session statistics and classify noisy channel conditions accurately enough to support future adaptive mitigation strategies.
+**Research question:** Can an ML model classify BB84 channel-noise conditions from simulation measurements and drive the selection of mitigation strategies that measurably improve the protocol?
 
-### Research Question
+## What This Project Delivers
 
-Can a machine-learning model identify BB84 channel-noise severity from simulation measurements and provide a foundation for selecting appropriate mitigation strategies?
+The classify → select → mitigate loop is implemented, not planned:
 
-## Project Objectives
-
-- Implement BB84 Quantum Key Distribution using Qiskit Aer.
-- Simulate Alice, Bob, and an optional intercept-resend eavesdropper.
-- Implement multiple controlled noise models.
-- Measure QBER and key-generation performance.
-- Run hundreds of BB84 simulation sessions.
-- Generate a reusable CSV dataset.
-- Train a Random Forest noise-severity classifier.
-- Evaluate the classifier using standard prediction metrics.
-- Prepare the project for future adaptive noise-mitigation research.
-
-## Current Project Schedule
-
-### Week 2 — BB84 in Qiskit
-
-Implemented:
-
-- Alice's random bits and basis choices
-- Bob's random basis choices
-- Optional Eve intercept-resend attack
-- Qiskit Aer simulation
-- Basis comparison and key sifting
-- Sifted-key length
-- Key accuracy
-- Quantum Bit Error Rate
-
-### Week 3 — Noise Models and Graphs
-
-Implemented:
-
-- Ideal baseline
-- Depolarizing noise
-- Readout noise
-- Amplitude-damping noise
-- Combined noise
-- QBER versus noise-strength graph
-- Eve-present versus Eve-absent QBER graph
-- Directional amplitude-damping error graph
-
-Generated figures are saved in:
-
-```text
-results/figures/
-```
-
-### Week 4 — Dataset Generation
-
-The default full experiment runs 220 complete BB84 sessions:
-
-- 20 ideal sessions
-- 200 noisy sessions
-- 4 noisy channel configurations
-- 5 nonzero noise strengths
-- Eve present and absent
-- 128 transmitted qubits per session
-
-The generated dataset is saved as:
-
-```text
-data/processed/bb84_experiment_dataset.csv
-```
-
-Each row represents one complete BB84 session rather than one individual qubit.
-
-### Week 5 — Random Forest Model
-
-The Random Forest classifier predicts:
-
-- `ideal`
-- `low`
-- `medium`
-- `high`
-
-The model does not receive the true noise strength, noise type, noise class, run ID, or repetition number as input features.
-
-Generated outputs include:
-
-- Accuracy
-- Balanced accuracy
-- Macro F1-score
-- Precision and recall by class
-- Classification report
-- Confusion matrix
-- Feature importance
-- Saved Joblib model
-
-Results are saved in:
-
-```text
-results/metrics/
-results/models/
-results/figures/
-```
+1. **Simulate** BB84 under four noise types at varying strengths (with an optional intercept-resend Eve).
+2. **Generate** a CSV dataset of session statistics (QBER, basis-specific QBER, sifted-key rate, directional bias, and more).
+3. **Classify** the noise type with a Random Forest (~0.83 cross-validated accuracy).
+4. **Select and apply** a mitigation action based on the prediction, and compare QBER before and after.
+5. **Harden** the protocol with quantum error-correcting codes and quantify the speed/cost of doing so.
+6. **Search** for circuit structures that resist all noise types at once while remaining fast.
 
 ## Repository Structure
 
 ```text
 adaptive-machine-learning/
 ├── .gitignore
-├── .venv/                         # Local only; not committed to GitHub
+├── .venv/                              # Local only; not committed
 ├── .vscode/
 │   └── settings.json
+├── BB84_Adaptive_QKD.py                # Core module: Weeks 2-6 (simulate, dataset, classify, mitigate)
+├── noise_resistance.py                 # Circuit-hardening study + ML-selected mitigation capstone
+├── advanced_circuits.py                # Separate test: advanced circuit search, multi-location noise
 ├── notebooks/
-│   └── BB84_Complete_Weeks_2_5.ipynb
-├── src/
-│   └── bb84/
-│       ├── __init__.py
-│       ├── core.py
-│       └── pipeline.py
+│   └── BB84_Adaptive_QKD.ipynb         # Runs and documents everything end to end
 ├── data/
-│   └── processed/
+│   └── processed/                      # Generated datasets (CSV)
 ├── results/
-│   ├── figures/
-│   ├── metrics/
-│   └── models/
-├── run_pipeline.py
+│   └── figures/                        # Generated figures (PNG)
 ├── requirements.txt
 └── README.md
 ```
 
-## Prerequisites
+All three `.py` files are importable modules (functions only, guarded by `if __name__ == "__main__"`). The notebook imports them to produce the figures and datasets for documentation.
 
-Install the following before setting up the project:
+## The Three Modules
+
+### 1. `BB84_Adaptive_QKD.py` — Core protocol, dataset, classifier, mitigation (Weeks 2-6)
+
+- **Week 2:** BB84 in Qiskit Aer — Alice's bits/bases, Bob's bases, optional intercept-resend Eve, sifting, QBER.
+- **Week 3:** Four noise models — `bit_flip`, `phase_flip`, `depolarizing`, `amplitude_damping` — across a range of strengths.
+- **Week 4:** Dataset generation. Each row is one full BB84 session with derived features, including `basis_qber_diff` (separates bit-flip vs phase-flip) and `bit_bias` (an amplitude-damping fingerprint).
+- **Week 5:** A Random Forest classifies the **noise type** (~0.83 cross-validated accuracy).
+- **Week 6:** Adaptive mitigation — the predicted noise type selects a mitigation action, and the demo table reports predicted vs true type.
+
+Performance note: sessions are simulated by precomputing the eight possible `(bit, prep-basis, measure-basis)` measurement probabilities once, then Bernoulli-sampling all qubits with NumPy. A full 1000-session dataset generates in roughly 30 seconds.
+
+Output: `data/processed/bb84_dataset.csv`
+
+### 2. `noise_resistance.py` — Circuit hardening + ML-driven mitigation capstone
+
+Studies how much BB84 can be strengthened against noise using **repetition codes** (bit-flip and phase-flip) at code distances 1–15, across noise strengths — 62 circuits in total. The logical error rate falls exponentially with code distance (best case ≈ 273,000× improvement: 5% physical → ~1.8e-7 logical at distance 15), while circuit depth and qubit count grow linearly — the measured cost of hardening.
+
+It also contains the capstone `adaptive_mitigation` routine that ties the loop together: run a BB84 session → the ML model predicts the noise type → the matching error-correcting code is selected → the protected QBER is measured.
+
+Outputs: `data/processed/noise_resistance_dataset.csv`, plus `results/figures/hardening_*.png` and `adaptive_ml_selected_mitigation.png`.
+
+### 3. `advanced_circuits.py` — Separate test: advanced circuit search
+
+A standalone exploration (imports nothing from the other modules) that searches for **unpredictable** circuit structures resistant to *all* noise types while staying fast. It builds a circuit zoo — bare qubit, chain vs tree repetition encoders, phase codes, independent re-transmission (send the bit N times with no entangling gates), and the Shor 9-qubit code — with **learned decoders** (each circuit calibrates its own syndrome→bit map by simulation) and injects noise at **three locations**: gate, channel, and readout.
+
+Key finding (counterintuitive): the champion is **independent re-transmission** (worst-case error ≈ 0.0025 across all four noise types at depth 3, as fast as a bare qubit), while the sophisticated Shor-9 code comes last — its entangling gates inject more noise than they correct. The location study shows readout noise dominates; hardening it cut error a further ~20%.
+
+Outputs: `data/processed/advanced_circuits_dataset.csv`, `data/processed/advanced_location_study.csv`, plus `results/figures/advanced_*.png`.
+
+## Prerequisites
 
 - Git
 - Python 3.10 or newer
-- WSL with Ubuntu, Linux, or another Python-compatible environment
-- Visual Studio Code
-- VS Code Python extension
-- VS Code Jupyter extension
-- VS Code WSL extension when using WSL
+- WSL (Ubuntu/Linux) or another Python-compatible environment
+- Visual Studio Code with the Python, Jupyter, and (for WSL) WSL extensions
 
-## Clone and Set Up the Project
+## Set Up the Project
 
-Each teammate must create their own local Python virtual environment. The `.venv` directory is intentionally excluded from GitHub because virtual environments contain machine-specific paths and installed binaries.
+The `.venv` directory is intentionally excluded from Git because virtual environments contain machine-specific paths. Each teammate creates their own.
 
-### 1. Clone the repository
+### 1. Clone
 
 ```bash
 git clone <YOUR-REPOSITORY-URL>
 cd adaptive-machine-learning
 ```
 
-Replace `<YOUR-REPOSITORY-URL>` with the actual GitHub repository URL.
-
-### 2. Create and configure the virtual environment
-
-For WSL or Linux, run:
+### 2. Create and configure the virtual environment (WSL / Linux)
 
 ```bash
 python3 -m venv .venv
@@ -182,118 +106,60 @@ python -m pip install -r requirements.txt
 python -m ipykernel install --user --name adaptive-machine-learning --display-name "Python (adaptive-machine-learning)"
 ```
 
-The same setup can be completed in one command:
+### 3. Reactivate in future sessions
 
 ```bash
-python3 -m venv .venv && source .venv/bin/activate && python -m pip install --upgrade pip && python -m pip install -r requirements.txt && python -m ipykernel install --user --name adaptive-machine-learning --display-name "Python (adaptive-machine-learning)"
+source .venv/bin/activate    # deactivate to leave
 ```
 
-### 3. Activate the environment during future sessions
+## Run the Code
 
-The environment only needs to be created once. Each time the project is reopened, activate it with:
+Each module can be run directly to regenerate its datasets and figures:
 
 ```bash
 source .venv/bin/activate
+
+python BB84_Adaptive_QKD.py     # dataset + classifier + adaptive-mitigation demo
+python noise_resistance.py      # circuit-hardening study + ML-selected mitigation
+python advanced_circuits.py     # separate test: advanced circuit search
 ```
 
-To leave the virtual environment:
-
-```bash
-deactivate
-```
-
-## Run a Quick Validation
-
-Run a smaller experiment first to confirm that the environment and dependencies work:
-
-```bash
-python run_pipeline.py --quick
-```
-
-The quick run creates a reduced dataset and verifies the complete simulation and machine-learning pipeline.
-
-## Run the Full Experiment
-
-Run the complete Week 2-5 pipeline with:
-
-```bash
-python run_pipeline.py
-```
-
-The program will:
-
-1. Run the BB84 simulations.
-2. Apply the configured noise models.
-3. Generate the experiment CSV.
-4. Create the noise-effect graphs.
-5. Train the Random Forest classifier.
-6. Save prediction metrics and model outputs.
-
-The full run can take several minutes.
+> The virtual environment is a Linux/WSL environment. On Windows, run these through WSL (for example `wsl -e bash -c "cd <repo> && .venv/bin/python BB84_Adaptive_QKD.py"`); the Windows Python interpreter cannot run the Linux `.venv` directly. For headless figure generation, set `MPLBACKEND=Agg`.
 
 ## Run the Jupyter Notebook
 
-Open the project from WSL:
+The notebook imports all three modules and reproduces every dataset and figure with narrative documentation.
 
-```bash
-code .
-```
-
-Then open:
+Open the project from WSL (`code .`), then open:
 
 ```text
-notebooks/BB84_Complete_Weeks_2_5.ipynb
+notebooks/BB84_Adaptive_QKD.ipynb
 ```
 
-In the upper-right corner of the notebook:
-
-1. Click **Select Kernel**.
-2. Select **Python Environments** or **Jupyter Kernel**.
-3. Choose **Python (adaptive-machine-learning)** or the interpreter at `.venv/bin/python`.
-4. Click **Run All**.
+Select the **Python (adaptive-machine-learning)** kernel (or the interpreter at `.venv/bin/python`) and choose **Run All**. Sections: Weeks 2–6, Circuit Hardening, Closing the Loop — ML-Selected Mitigation, Separate Test — Advanced Circuit Search, and Conclusion.
 
 ## Main Output Files
 
-### Dataset
+### Datasets
 
 ```text
-data/processed/bb84_experiment_dataset.csv
+data/processed/bb84_dataset.csv                # BB84 sessions across four noise types
+data/processed/noise_resistance_dataset.csv    # Repetition-code hardening results
+data/processed/advanced_circuits_dataset.csv   # Circuit-zoo results across noise types
+data/processed/advanced_location_study.csv     # Gate/channel/readout noise-location study
 ```
 
-### Noise graphs
+### Figures
 
 ```text
-results/figures/qber_vs_noise.png
-results/figures/qber_eve_comparison.png
-results/figures/amplitude_damping_directionality.png
-```
-
-### Machine-learning graphs
-
-```text
-results/figures/random_forest_confusion_matrix.png
-results/figures/random_forest_feature_importance.png
-```
-
-### Prediction metrics
-
-```text
-results/metrics/random_forest_metrics.json
-results/metrics/classification_report.csv
-results/metrics/feature_importance.csv
-```
-
-### Trained model
-
-```text
-results/models/bb84_noise_severity_random_forest.joblib
+results/figures/adaptive_ml_selected_mitigation.png    # The classify→select→mitigate loop
+results/figures/hardening_*.png                        # Logical error vs distance, cost, trade-offs
+results/figures/advanced_*.png                         # Circuit zoo, universality vs speed, champion
 ```
 
 ## Git and Virtual Environment Rules
 
-The local `.venv` folder should not be committed to GitHub.
-
-The `.gitignore` file should include:
+Do not commit `.venv/`. The `.gitignore` covers:
 
 ```gitignore
 .venv/
@@ -302,77 +168,30 @@ __pycache__/
 .ipynb_checkpoints/
 ```
 
-The repository should include `requirements.txt`, which allows every teammate to install the same required Python packages in their own environment.
-
-Files that should be committed include:
-
-```text
-.gitignore
-README.md
-requirements.txt
-run_pipeline.py
-notebooks/
-src/
-```
-
-Files and folders that should not be committed include:
-
-```text
-.venv/
-__pycache__/
-.ipynb_checkpoints/
-```
+Commit `requirements.txt` so teammates can reproduce the environment.
 
 ## Team Git Workflow
 
-Before beginning work:
-
 ```bash
 git pull
-```
-
-Create a branch for new work:
-
-```bash
 git checkout -b feature/descriptive-branch-name
-```
-
-After making changes:
-
-```bash
+# ...make changes...
 git add .
 git commit -m "Describe the completed change"
 git push -u origin feature/descriptive-branch-name
 ```
 
-Then open a pull request on GitHub so the changes can be reviewed before being merged into the main branch.
+Then open a pull request on GitHub for review before merging.
 
 ## Reproducibility
 
-The project uses fixed random seeds where appropriate so that simulation and machine-learning results can be reproduced more consistently. Exact runtime and some numerical results can still vary slightly depending on the operating system, Python version, and installed dependency versions.
+Fixed random seeds are used where appropriate so simulation and ML results reproduce consistently. Exact runtimes and some numerical values can still vary slightly across operating systems, Python versions, and dependency versions.
 
-## Current Limitations
+## Limitations
 
-- The current code classifies noise severity but does not yet apply an adaptive mitigation action.
-- The simulation uses Qiskit Aer rather than physical quantum-network hardware.
-- The default dataset contains 220 sessions and may be expanded for stronger machine-learning evaluation.
-- Additional models and validation strategies may be needed before making claims about real-world QKD performance.
-- The current implemented noise configurations are ideal, depolarizing, readout, amplitude damping, and combined noise.
-
-## Planned Extensions
-
-Possible future work includes:
-
-- Adaptive mitigation selection based on the predicted channel class
-- Bit-flip and phase-flip channel models
-- Additional machine-learning algorithms
-- Hyperparameter optimization
-- Cross-validation
-- Larger datasets
-- Real-device or hardware-calibrated noise models
-- Statistical comparison between mitigation strategies
-- Secure-key-rate estimation
-- Integration with research-paper retrieval tools as a separate supporting system
+- Simulations use Qiskit Aer, not physical quantum hardware.
+- ML classification accuracy is intentionally not the sole objective — the emphasis is on driving a genuine mitigation-selection loop and on studying circuit-level noise resistance.
+- The advanced circuit search is a comparative simulation study; its findings motivate, but do not by themselves prove, real-world QKD performance.
 
 ## License
 
