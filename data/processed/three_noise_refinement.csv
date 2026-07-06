@@ -1,0 +1,4 @@
+noise_type,error_before,error_after,reduction_pct
+bit_flip,0.03837,0.035,8.8
+phase_flip,0.06306,0.05887,6.6
+depolarizing,0.04612,0.04219,8.5

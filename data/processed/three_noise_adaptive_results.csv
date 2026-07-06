@@ -1,0 +1,7 @@
+true_noise,strength,predicted_noise,correct,selected_circuit,bare_error,fixed_error,adaptive_error,reduction_vs_bare_pct
+bit_flip,0.08,bit_flip,True,independent_15,0.10812,0.00306,6e-05,99.9
+bit_flip,0.14,bit_flip,True,independent_15,0.16594,0.01719,0.00069,99.6
+phase_flip,0.08,phase_flip,True,independent_21,0.02094,0.0,0.0,100.0
+phase_flip,0.14,phase_flip,True,independent_21,0.02094,0.0,0.0,100.0
+depolarizing,0.08,depolarizing,True,independent_15,0.06137,0.00069,0.0,100.0
+depolarizing,0.14,depolarizing,True,independent_15,0.08981,0.00187,0.0,100.0
