@@ -193,6 +193,3 @@ Fixed random seeds are used where appropriate so simulation and ML results repro
 - ML classification accuracy is intentionally not the sole objective — the emphasis is on driving a genuine mitigation-selection loop and on studying circuit-level noise resistance.
 - The advanced circuit search is a comparative simulation study; its findings motivate, but do not by themselves prove, real-world QKD performance.
 
-## License
-
-Add the project's selected license information here.
